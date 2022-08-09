@@ -22,17 +22,19 @@ class MyWindow(Gtk.Window):
         #self.box = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
         #self.add(self.box)
 
-        grid = Gtk.Grid()
+        self.grid = Gtk.Grid()
         self.add(grid)
 
         self.albumTitleBar = Gtk.SearchBar()
 
         #self.box.pack_start(self.albumTitleBar, True, True, 0)
-        grid.attach(self.albumTitleBar, 0, 0, 1, 1)
+        self.grid.attach(self.albumTitleBar, 0, 0, 1, 1)
 
-        albumName = Gtk.SearchEntry()
-        self.albumTitleBar.connect_entry(albumName)
-        self.albumTitleBar.add(albumName)
+        self.albumName = Gtk.SearchEntry()
+        self.albumTitleBar.connect_entry(self.albumName)
+        self.albumTitleBar.add(self.albumName)
+        self.label = Gtk.Label(label=self.albumName)
+        grid.attach(self.label, 0, 1, 1, 1)
 
         self.connect("destroy", Gtk.main_quit)
         self.show_all()
@@ -46,14 +48,18 @@ class MyWindow(Gtk.Window):
                 self.albumTitleBar.set_search_mode(False)
             else:
                 self.albumTitleBar.set_search_mode(True)
+                if shortcut in ("Return"):
+                    self.label = Gtk.Label(label=self.albumName)
+                    self.grid.attach(self.label, 0, 1, 1, 1)
+
         
 
     def on_button1_clicked(self, widget):
        self.lfm.toDatabase()
 
-    def spawnAlbum(albumName, artistName):
+    def spawnAlbum(self.albumName, artistName):
         self.lfm = LastFm()
-        self.lfm.setAlbumInfo(albumName, artistName)
+        self.lfm.setAlbumInfo(self.albumName, artistName)
         self.lfm.downloadCover()
         self.img = Gtk.Image.new_from_file(os.path.join("../pics/", self.lfm.getImgName()))
         self.box.pack_start(self.img, True, True, 0)

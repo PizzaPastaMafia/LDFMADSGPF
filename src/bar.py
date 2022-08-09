@@ -1,42 +1,35 @@
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
-from gi.repository import Gdk
 
-class SearchBar(Gtk.Window):
+
+class MainWindow(Gtk.Window):
+
+
     def __init__(self):
-        Gtk.Window.__init__(self)
-        self.set_default_size(250, -1)
-        self.set_title("SearchBar")
-        self.connect("key-press-event", self.on_key_event)
-        self.connect("destroy", Gtk.main_quit)
+        super().__init__(title="search")
+        self.add(self.box)
+        self.add_searchBar()
+        
+    def add_searchBar(self):
+        self.box = Gtk.Box(spacing=6)
+        self.entry = Gtk.Entry()
+        self.button = Gtk.Button(label="search")
+        self.button.connect("clicked", self.show_entry)
 
-        grid = Gtk.Grid()
-        self.add(grid)
+        self.box.pack_start(self.entry, True, True, 0)
+        self.box.pack_start(self.button, True, True, 0)
 
-        label = Gtk.Label(label="Press Control+F to initiate find")
-        grid.attach(label, 0, 0, 1, 1)
 
-        self.searchbar = Gtk.SearchBar()
-        grid.attach(self.searchbar, 0, 1, 1, 1)
-
-        searchentry = Gtk.SearchEntry()
-        self.searchbar.connect_entry(searchentry)
-        self.searchbar.add(searchentry)
-
-        self.connect("destroy", Gtk.main_quit)
+    def show_entry(self, widget):
+        print(self.entry.get_text())
+        self.label = Gtk.Label(label=self.entry.get_text())
+        self.box.pack_start(self.entry, True, True, 0)
         self.show_all()
 
-    def on_key_event(self, widget, event):
-        shortcut = Gtk.accelerator_get_label(event.keyval, event.state)
 
-        if shortcut in ("Ctrl+F", "Ctrl+Mod2+F"):
-            if self.searchbar.get_search_mode():
-                self.searchbar.set_search_mode(False)
-            else:
-                self.searchbar.set_search_mode(True)
-
-window = SearchBar()
-window.show_all()
-
+win = MainWindow()
+win.connect("destroy", Gtk.main_quit)
+win.show_all()
 Gtk.main()
