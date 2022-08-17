@@ -22,6 +22,7 @@ class LastFm():
         self.payload['format'] = 'json'
 
         response = requests.get(url, headers=headers, params=self.payload)
+        
         return response
 
     def getJson(self):
@@ -41,6 +42,7 @@ class LastFm():
 
     def downloadCover(self):
         jsonData = self.getJson()
+        print(jsonData)
         url = jsonData['album']['image'][5]['#text']
         img_data = requests.get(url).content
         with open(os.path.join("../pics/", self.getImgName()), 'wb') as handler:

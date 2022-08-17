@@ -9,24 +9,25 @@ class MainWindow(Gtk.Window):
 
     def __init__(self):
         super().__init__(title="search")
-        self.add(self.box)
         self.add_searchBar()
+
+    
         
     def add_searchBar(self):
-        self.box = Gtk.Box(spacing=6)
+        self.box = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
+        self.add(self.box)
         self.entry = Gtk.Entry()
         self.button = Gtk.Button(label="search")
-        self.button.connect("clicked", self.show_entry)
+        self.button.connect("clicked", self.showAlbum(self.entry))
 
         self.box.pack_start(self.entry, True, True, 0)
         self.box.pack_start(self.button, True, True, 0)
 
-
-    def show_entry(self, widget):
-        print(self.entry.get_text())
-        self.label = Gtk.Label(label=self.entry.get_text())
-        self.box.pack_start(self.entry, True, True, 0)
-        self.show_all()
+    def showAlbum(self, albumName):
+        self.albumLayout = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
+        self.albumLAyout(LastFm().setAlbumInfo(albumName, artistName).getImgName(), True, True, 0)
+        self.add(albumName, True, True, 0)
+        self.add(artistName, True, True, 0)
 
 
 win = MainWindow()
