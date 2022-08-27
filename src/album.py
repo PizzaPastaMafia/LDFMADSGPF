@@ -1,42 +1,30 @@
-import requests
-import json
+import gi
+from PIL import Image
+from io import BytesIO
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+from gi.repository import GdkPixbuf
 
-class lastfm():
+class AlbumWindow(Gtk.Window):
+    self.albumName = ""
+    self.artistName = ""
     def __init__(self, albumName, artistName):
-        self.payload = {
-            'method': 'album.getInfo',
-            'artist': artistName,
-            'album': albumName,
-        }
+        Gtk.Window.__init__(self)
+        title = self.albumName + " - " + self.artistName
+        self.set_title(title)
+        self.albumBox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
+        self.img = Gtk.Image.new_from_file(os.path.join("./pics/", self.lfm.getImgName()))
 
-    def lastfm_get(self, payload):
-        # define headers and URL
-        headers = {'user-agent': 'Dataquest'}
-        url = 'https://ws.audioscrobbler.com/2.0/'
+        #songList = lfm.getSongList()
+        #for song in songList:
+        #    scrolledwindow.add(Gtk.Label(song))
 
-        # Add API key and format to the payload
-        self.payload['api_key'] = 'd8b9e3848409cbc83ec4a7d1f154fad5'
-        self.payload['format'] = 'json'
+        button1 = Gtk.Button(label="Add Album to Library")
 
-        response = requests.get(url, headers=headers, params=self.payload)
-        return response
+        self.albumBox.pack_start(self.img, True, True, 0)
+        self.albumBox.pack_start(button1, True, True, 0)
 
-    def downloadCover(self):
-        jsonData = self.lastfm_get(self.payload).json()
-        url = jsonData['album']['image'][5]['#text']
-        print(url)
-        img_data = requests.get(url).content
-        with open('pinkfloyd_darksideofthemoon.png', 'wb') as handler:
-            handler.write(img_data)
+        self.add(albumBox)
 
-
-
-#def jprint(obj):
-    # create a formatted string of the Python JSON object
-#    text = json.dumps(obj, sort_keys=True, indent=4)
-#    print(text)
-
-#r = lastfm.lastfm_get(lastfmpayload)
-#r.status_code
-
-#jprint(r.json())
+        self.connect("destroy", Gtk.main_quit)
+        self.show_all()

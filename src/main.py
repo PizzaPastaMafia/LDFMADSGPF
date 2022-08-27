@@ -9,7 +9,7 @@ def main():
     #albumName = input("albumName\n")
     #artistName = input("artistName\n")
     win = MainWindow()
-    win.main()
+    #win.main()
     #win = albumInfo.MyWindow()
     Gtk.main()
 
