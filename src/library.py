@@ -20,8 +20,8 @@ class MainWindow(Gtk.Window):
         self.addAlbumBtn = Gtk.Button(label="Add Album") 
         self.addAlbumBtn.connect("clicked", self.showWindow)
         self.add(self.addAlbumBtn)
-        for album in Album.select():
-            self.add(AlbumIcon(album.title, album.artist))
+        #for album in Album.select():
+        #    self.add(AlbumIcon(album.title, album.artist))
 
         self.connect("destroy", Gtk.main_quit)
         self.show_all()

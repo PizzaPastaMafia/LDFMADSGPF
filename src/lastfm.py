@@ -95,3 +95,6 @@ class LastFm():
     def getImgName(self):
         return self.getTrimmedAlbumName() + "_" + self.getTrimmedArtistName() + ".png"
 
+    def getMbid(self):
+        jsonData = self.getJson()
+        return jsonData['album']['mbid']

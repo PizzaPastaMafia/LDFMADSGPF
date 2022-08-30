@@ -12,6 +12,7 @@ class Artist(BaseModel):
 class Album(BaseModel):
     title = CharField()
     artist = ForeignKeyField(Artist, backref="albums")
+    mbid = CharField(unique=True)
     vote = IntegerField(default=0)
     favourite = BooleanField(default=False)
 
@@ -24,12 +25,12 @@ class Album(BaseModel):
 #    class Meta:
 #        database = db
 
-db.connect()
-db.create_tables([Album, Artist])
+
+#db.create_tables([Album, Artist])
 #Album.insert(title="the wall", artist=Artist.create(name="pink floyd")).execute()
 
-rows = Album.select()
-print(rows.sql())
-for row in rows:
-   print ("title: {} artist: {}".format(row.title, row.artist.name))
-db.close()
+#rows = Album.select()
+#print(rows.sql())
+#for row in rows:
+   #print ("title: {} artist: {}".format(row.title, row.artist.name))
+#db.close()
