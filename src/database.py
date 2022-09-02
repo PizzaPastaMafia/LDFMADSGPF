@@ -2,6 +2,7 @@ from peewee import *
 
 db = SqliteDatabase('albums.db')
 
+
 class BaseModel(Model):    
     class Meta:
         database = db
@@ -12,21 +13,14 @@ class Artist(BaseModel):
 class Album(BaseModel):
     title = CharField()
     artist = ForeignKeyField(Artist, backref="albums")
-    mbid = CharField(unique=True)
+    #mbid = CharField(unique=True)
     vote = IntegerField(default=0)
     favourite = BooleanField(default=False)
 
 
+if not(db.table_exists([Album, Artist])):
+    db.create_tables([Album, Artist])
 
-#class Song(Model):
-#    parent = ForeignKeyField(Album, backref='songs')
-#    title = CharField()
-
-#    class Meta:
-#        database = db
-
-
-#db.create_tables([Album, Artist])
 #Album.insert(title="the wall", artist=Artist.create(name="pink floyd")).execute()
 
 #rows = Album.select()
