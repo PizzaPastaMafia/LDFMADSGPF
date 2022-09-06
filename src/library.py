@@ -10,16 +10,16 @@ import database as datab
 import os
 
 class AlbumExtended(Gtk.Window):
-    def __init__(self, album):
+    def __init__(self, albumName):
         super().__init__()
-        self.album = album
-        self.set_title(title=album.title + " - " + album.artist.name)
+        self.album = self.queryAlbum(albumName)
+        self.set_title(title=self.album.title + " - " + self.album.artist.name)
         self.lf = lf()
         self.box = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
-        self.lf.setAlbumInfo(name=album.title, artist=album.artist.name)
+        self.lf.setAlbumInfo(name=self.album.title, artist=self.album.artist.name)
         self.box.pack_start(Gtk.Image.new_from_file(os.path.join("../pics/", self.lf.getImgName())), True, True, 0)
-        self.box.pack_start(Gtk.Label(label=album.title), True, True, 0)
-        self.box.pack_start(Gtk.Label(label=album.artist.name), True, True, 0)
+        self.box.pack_start(Gtk.Label(label=self.album.title), True, True, 0)
+        self.box.pack_start(Gtk.Label(label=self.album.artist.name), True, True, 0)
 
         self.voteBox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL)
         self.voteSelect = Gtk.ComboBox.new_with_entry()
@@ -29,7 +29,7 @@ class AlbumExtended(Gtk.Window):
         self.box.pack_start(self.voteBox, True, True, 0)
 
 
-        if album.favourite:
+        if self.album.favourite:
             self.favouriteButton = Gtk.Button(label="remove to favorites")
         else:
             self.favouriteButton = Gtk.Button(label="add to favorites")
@@ -40,26 +40,42 @@ class AlbumExtended(Gtk.Window):
 
         self.add(self.box)
 
-        self.connect("destroy", Gtk.main_quit)
+        self.connect("destroy", self.destroy)
         self.show_all()
 
     def changeFav(self, widget):
         datab.Album.update(favourite= not(self.album.favourite)).where(datab.Album.title == self.album.title).execute()
+        self.destroy()
+    
+    def queryAlbum(self, albumName):
+        
+        try:
+            datab.db.connect()
+        except:
+            datab.db.close()
+            datab.db.connect()
 
-#class EmptyAlbumIcon(Gtk.button):
+        rows = datab.Album.select()
+
+        datab.db = SqliteDatabase('albums.db')
+
+        for row in rows:
+            if(row.title == albumName):
+                return row
+
 
 class AlbumIcon(Gtk.Button):
-    def __init__(self, album):
+    def __init__(self, albumName):
         super().__init__()
-        self.album = album
+        self.album = self.queryAlbum(albumName)
         self.lf = lf()
         self.box = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
-        self.lf.setAlbumInfo(name=album.title, artist=album.artist.name)
+        self.lf.setAlbumInfo(name=self.album.title, artist=self.album.artist.name)
         img = Gtk.Image.new_from_file(os.path.join("../pics/", self.lf.getImgName()))
 
         self.box.pack_start(img, True, True, 0)
-        self.box.pack_start(Gtk.Label(label=album.title), True, True, 0)
-        self.box.pack_start(Gtk.Label(label=album.artist.name), True, True, 0)
+        self.box.pack_start(Gtk.Label(label=self.album.title), True, True, 0)
+        self.box.pack_start(Gtk.Label(label=self.album.artist.name), True, True, 0)
 
         try:
             datab.db.connect()
@@ -68,15 +84,30 @@ class AlbumIcon(Gtk.Button):
             datab.db.connect()
 
 
-        checkAlbum = datab.Album.get(datab.Album.title == album.title)
+        checkAlbum = datab.Album.get(datab.Album.title == self.album.title)
         self.box.pack_start(Gtk.Label(label=checkAlbum.vote), True, True, 0)
         self.add(self.box)
         self.connect("clicked", self.extend)
         self.show_all()
 
     def extend(self, widget):
-        win = AlbumExtended(self.album)
+        win = AlbumExtended(self.album.title)
 
+    def queryAlbum(self, albumName):
+        
+        try:
+            datab.db.connect()
+        except:
+            datab.db.close()
+            datab.db.connect()
+
+        rows = datab.Album.select()
+
+        datab.db = SqliteDatabase('albums.db')
+
+        for row in rows:
+            if(row.title == albumName):
+                return row
 
 
 
@@ -84,8 +115,9 @@ class AlbumIcon(Gtk.Button):
 class MainWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="Lorenzo Del Forno Music Album Database Super Graphical Python Frontend")
-        self.resize(1000,1000)
+        self.resize(975,975)
         self.grid = Gtk.Grid()
+        self.favTrigger = False
 
         hbar = Gtk.HeaderBar()
         hbar.set_show_close_button(True)
@@ -101,7 +133,7 @@ class MainWindow(Gtk.Window):
         update_icn = Gio.ThemedIcon(name="reload-symbolic")
         update_img = Gtk.Image.new_from_gicon(update_icn, Gtk.IconSize.BUTTON)
         self._update_btn.set_image(update_img)
-        #self._update_btn.connect("clicked", self.showAlbums)
+        self._update_btn.connect("clicked", self.gtkShowAlbums)
 
         self._add_btn = Gtk.Button()
         add_icn = Gio.ThemedIcon(name="list-add-symbolic")
@@ -113,22 +145,34 @@ class MainWindow(Gtk.Window):
         fav_icn = Gio.ThemedIcon(name="favourite-symbolic")
         fav_img = Gtk.Image.new_from_gicon(fav_icn, Gtk.IconSize.BUTTON)
         self._fav_btn.set_image(fav_img)
+        self._fav_btn.connect("clicked", self.showFavourites)
+
 
         hbar.pack_end(self._search_btn)
         hbar.pack_end(self._update_btn)
         hbar.pack_start(self._add_btn)
         hbar.pack_end(self._fav_btn)
 
-        self.showAlbums()
 
-        self.add(self.grid)
+        self.scroll = Gtk.ScrolledWindow()
+        self.showAlbums(self.favTrigger)
+        #self.scroll.add(self.grid)
+
+        self.add(self.scroll)
 
         self.connect("destroy", Gtk.main_quit)
         self.show_all()
         Gtk.main()
 
-    def showAlbums(self):
+    def showFavourites(self, widget):
+        self.favTrigger = not(self.favTrigger)
+        print(self.favTrigger)
+        self.scroll.remove(self.scroll.get_child())
+        self.showAlbums(self.favTrigger)
 
+    def gtkShowAlbums(self, widget):
+        self.scroll.remove(self.scroll.get_child())
+        tempGrid = Gtk.Grid()
 
         gridSize = 3
 
@@ -145,15 +189,50 @@ class MainWindow(Gtk.Window):
 
         datab.db = SqliteDatabase('albums.db')
 
-        #self.grid.attach(self.EmptyAlbumIcon, colNum, rowNum, 1, 1)
         for row in rows:
-            self.grid.attach(AlbumIcon(row), colNum, rowNum, 1, 1)
+
+            self.grid.attach(AlbumIcon(row.title), colNum, rowNum, 1, 1)
             
             if colNum == gridSize-1:
                 colNum = 0
                 rowNum += 1
             else:
                 colNum += 1
+
+        #self.grid = tempGrid
+        self.scroll.add(self.grid)
+        
+    def showAlbums(self, showFavs):
+        tempGrid = Gtk.Grid()
+
+        gridSize = 3
+
+        rowNum = 0
+        colNum = 0
+
+        try:
+            datab.db.connect()
+        except:
+            datab.db.close()
+            datab.db.connect()
+
+        rows = datab.Album.select()
+
+        datab.db = SqliteDatabase('albums.db')
+
+        for row in rows:
+            if((showFavs and row.favourite) or (showFavs == False)):
+
+                self.grid.attach(AlbumIcon(row.title), colNum, rowNum, 1, 1)
+            
+            if colNum == gridSize-1:
+                colNum = 0
+                rowNum += 1
+            else:
+                colNum += 1
+
+        #self.grid = tempGrid
+        self.scroll.add(self.grid)
 
                 
     def showWindow(self, widget):

@@ -6,7 +6,7 @@ from io import BytesIO
 from lastfm import LastFm
 
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 from gi.repository import GdkPixbuf
 
 from peewee import *
@@ -27,12 +27,14 @@ class MyWindow(Gtk.Window):
 
         self.add_searchBar()
 
+
         self.connect("destroy", Gtk.main_quit)
         self.show_all()
 
     def showAlbum(self):
         self.albumWindow = Gtk.Window()
-        self.set_title(self.lfm.getAlbumName() + " - " + self.lfm.getArtistName())
+        self.albumWindow.set_destroy_with_parent(True)
+        self.albumWindow.set_title(self.lfm.getAlbumName() + " - " + self.lfm.getArtistName())
         self.albumWindow.albumBox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
         self.albumWindow.img = Gtk.Image.new_from_file(os.path.join("../pics/", self.lfm.getImgName()))
 
@@ -50,17 +52,13 @@ class MyWindow(Gtk.Window):
         try:
             checkAlbum = datab.Album.get(datab.Album.title == self.albumSearch.get_text())
             print("found")
-            button1 = Gtk.Button(label="This Album is already in library").set_device_enabled(False)
+            button1 = Gtk.Button(label="This Album is already in library")
                 
         except datab.Album.DoesNotExist:
             print("not found")
             button1 = Gtk.Button(label="Add Album to Library")
             button1.connect("clicked", self.toDatabase)
             #button1.connect("clicked", Gtk.main_quit)
-
-        
-
-
 
         self.albumWindow.albumBox.pack_start(self.albumWindow.img, True, True, 0)
         self.albumWindow.albumBox.pack_start(button1, True, True, 0)
@@ -75,6 +73,7 @@ class MyWindow(Gtk.Window):
         artist=datab.Artist.create(name=self.artistSearch.get_text())
         datab.Album.insert(title=self.albumSearch.get_text(), artist=artist).execute()
         datab.db.close()
+        self.albumWindow.destroy()
 
     def add_searchBar(self):
         self.searchBox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
