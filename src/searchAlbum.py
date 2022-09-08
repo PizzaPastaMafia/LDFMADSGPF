@@ -11,9 +11,13 @@ from gi.repository import GdkPixbuf
 
 from peewee import *
 import database as datab
+
+from albumGraphics import AlbumExtended, AlbumIcon, NotFoundWindow
 #from album import AlbumWindow
 
 import os
+
+
 
 class MyWindow(Gtk.Window):
     def __init__(self):
@@ -24,12 +28,15 @@ class MyWindow(Gtk.Window):
         scrolledwindow = Gtk.ScrolledWindow()
         self.mainBox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL)
         self.add(self.mainBox)
-
-        self.add_searchBar()
+        self.searchLib = False
+        self.libAlbum = None
 
 
         self.connect("destroy", Gtk.main_quit)
         self.show_all()
+
+    def setSearchLib(self, b):
+        self.searchLib = b
 
     def showAlbum(self):
         self.albumWindow = Gtk.Window()
@@ -51,14 +58,11 @@ class MyWindow(Gtk.Window):
 
         try:
             checkAlbum = datab.Album.get(datab.Album.title == self.albumSearch.get_text())
-            print("found")
             button1 = Gtk.Button(label="This Album is already in library")
                 
         except datab.Album.DoesNotExist:
-            print("not found")
             button1 = Gtk.Button(label="Add Album to Library")
             button1.connect("clicked", self.toDatabase)
-            #button1.connect("clicked", Gtk.main_quit)
 
         self.albumWindow.albumBox.pack_start(self.albumWindow.img, True, True, 0)
         self.albumWindow.albumBox.pack_start(button1, True, True, 0)
@@ -81,7 +85,10 @@ class MyWindow(Gtk.Window):
         self.albumSearch = Gtk.Entry()
         self.artistSearch = Gtk.Entry()
         self.button = Gtk.Button(label="search")
-        self.button.connect("clicked", self.searchAlbum)
+        if self.searchLib:
+            self.button.connect("clicked", self.searchAlbumDatabase)
+        else:
+            self.button.connect("clicked", self.searchAlbumLfm)
 
         self.searchBox.pack_start(self.albumSearch, True, True, 0)
         self.searchBox.pack_start(self.artistSearch, True, True, 0)
@@ -95,7 +102,7 @@ class MyWindow(Gtk.Window):
     #def on_button1_clicked(self, widget):
     #   self.lfm.toDatabase()
 
-    def searchAlbum(self, widget):
+    def searchAlbumLfm(self, widget):
         self.lfm = LastFm()
         self.lfm.setAlbumInfo(self.albumSearch.get_text(), self.artistSearch.get_text())
         self.lfm.lastfm_get(self.lfm.payload)
@@ -103,7 +110,20 @@ class MyWindow(Gtk.Window):
 
         self.showAlbum()
 
+    def searchAlbumDatabase(self, widget):
+        try:
+            datab.db.connect()
+        except:
+            datab.db.close()
+            datab.db.connect()
 
+        try:
+            self.libAlbum = datab.Album.get(datab.Album.title == self.albumSearch.get_text())
+            AlbumExtended(self.libAlbum.title)
+        except datab.Album.DoesNotExist:
+            self.libAlbum = None
+            nfw = NotFoundWindow()
+            nfw.show()
 
     def main(self):
         Gtk.main()
