@@ -92,7 +92,7 @@ class MainWindow(Gtk.Window):
 
         for row in rows:
 
-            self.grid.attach(AlbumIcon(row.title), colNum, rowNum, 1, 1)
+            tempGrid.attach(AlbumIcon(row.title), colNum, rowNum, 1, 1)
             
             if colNum == gridSize-1:
                 colNum = 0
