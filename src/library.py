@@ -156,7 +156,6 @@ class MainWindow(Gtk.Window):
 
         self.scroll = Gtk.ScrolledWindow()
         self.showAlbums(self.favTrigger)
-        #self.scroll.add(self.grid)
 
         self.add(self.scroll)
 
@@ -166,8 +165,7 @@ class MainWindow(Gtk.Window):
 
     def showFavourites(self, widget):
         self.favTrigger = not(self.favTrigger)
-        print(self.favTrigger)
-        self.scroll.remove(self.scroll.get_child())
+        self.scroll.remove(self.grid)
         self.showAlbums(self.favTrigger)
 
     def gtkShowAlbums(self, widget):
@@ -199,8 +197,9 @@ class MainWindow(Gtk.Window):
             else:
                 colNum += 1
 
-        #self.grid = tempGrid
+        self.grid = tempGrid
         self.scroll.add(self.grid)
+        self.scroll.show_all()
         
     def showAlbums(self, showFavs):
         tempGrid = Gtk.Grid()
@@ -223,7 +222,8 @@ class MainWindow(Gtk.Window):
         for row in rows:
             if((showFavs and row.favourite) or (showFavs == False)):
 
-                self.grid.attach(AlbumIcon(row.title), colNum, rowNum, 1, 1)
+                tempGrid.attach(AlbumIcon(row.title), colNum, rowNum, 1, 1)
+            
             
             if colNum == gridSize-1:
                 colNum = 0
@@ -231,8 +231,9 @@ class MainWindow(Gtk.Window):
             else:
                 colNum += 1
 
-        #self.grid = tempGrid
+        self.grid = tempGrid
         self.scroll.add(self.grid)
+        self.scroll.show_all()
 
                 
     def showWindow(self, widget):
