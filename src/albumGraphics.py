@@ -22,10 +22,17 @@ class AlbumExtended(Gtk.Window):
         self.box.pack_start(Gtk.Label(label=self.album.artist.name), True, True, 0)
 
         self.voteBox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL)
-        self.voteSelect = Gtk.ComboBox.new_with_entry()
-        self.voteSelect.do_format_entry_text(self.voteSelect,"maooo")
+        self.voteSelect = Gtk.ComboBoxText()
+        i=1
+        for i in range(1, 11):
+            self.voteSelect.append_text(str(i))
+
+        sub = Gtk.Button(label="submit")
+        sub.connect("clicked", self.changeVote)
+
         self.voteBox.pack_start(Gtk.Label(label="vote:"), True, True, 0)
         self.voteBox.pack_start(self.voteSelect, True, True, 0)
+        self.voteBox.pack_start(sub, True, True, 0)
         self.box.pack_start(self.voteBox, True, True, 0)
 
 
@@ -46,6 +53,9 @@ class AlbumExtended(Gtk.Window):
     def changeFav(self, widget):
         datab.Album.update(favourite= not(self.album.favourite)).where(datab.Album.title == self.album.title).execute()
         self.destroy()
+
+    def changeVote(self, widget):
+        datab.Album.update(vote = int(self.voteSelect.get_active_text())).where(datab.Album.title == self.album.title).execute()
     
     def queryAlbum(self, albumName):
         
